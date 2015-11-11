@@ -18,7 +18,13 @@ class Vector(group.Group):
     # def mean(s, *v):
     #     for v1 in v: s += v1
     #     return s.__class__(s / ([len(v)]*len(s)))
-#
+
 if __name__ == '__main__':
     v1 = Vector(1,2,3)
     v2 = Vector(3,2,1)
+    assert v1.dot(v2) == 10
+    assert v1.cross(v2) == Vector(-4,8,-4)
+    assert round(v1.magnitude, 2) == 3.74
+    assert round(v1.angle(v2), 2) == 44.42
+    assert v1.normalized < Vector(1,1,1)
+    print "All good."
