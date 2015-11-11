@@ -19,6 +19,7 @@ class Group(tuple):
     def __le__(s, v): return False not in set(a <= b for a, b in zip(s, s._scale(v)))
     def __ge__(s, v): return False not in set(a >= b for a, b in zip(s, s._scale(v)))
     def __floordiv__(s, v): return s.__class__(a // b for a, b in zip(s, s._scale(v)))
+    def __new__(s, *args): return tuple.__new__(s, args[0] if len(args) == 1 else args)
     def _scale(s, v): return [v]*len(s) if type(v) == int or type(v) == float else v
 
 if __name__ == '__main__':
