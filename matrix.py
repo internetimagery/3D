@@ -11,12 +11,14 @@ class Matrix(group.Group):
     def __repr__(s):
         w = s.cols * 2 + 3 # Width
         return (":" * w) + "\n" + "\n".join( "::%s::" % " ".join(str(c) for c in r) for r in s) + "\n" + (":" * w)
+    def row(s, r): return s[r]
+    def col(s, c): return vector.Vector(r[c] for r in s)
 
 m = Matrix([
     [1,2,3],
     [3,2,1]
 ])
-print m
+print m.row(1), m.col(2)
 #
 # class Matrix(collections.Sequence):
 #     __slots__ = ("row", "col", "cols", "rows")
