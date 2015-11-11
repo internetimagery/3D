@@ -4,13 +4,19 @@ import group
 import vector
 
 class Matrix(group.Group):
-    __slots__ = ()
+    # __slots__ = ()
     def __new__(s, m):
-        group.Group.__new__(s, tuple(vector.Vector(r) for r in m))
+        s.rows = len(m); s.cols = len(m[0])
+        return group.Group.__new__(s, tuple(vector.Vector(r) for r in m))
+    def __repr__(s):
+        w = s.cols * 2 + 3 # Width
+        return (":" * w) + "\n" + "\n".join( "::%s::" % " ".join(str(c) for c in r) for r in s) + "\n" + (":" * w)
 
-print tuple(vector.Vector(r) for r in [[1,2,4],[2,3,2]])
-
-print Matrix([[1,2,3], [3,2,1]])
+m = Matrix([
+    [1,2,3],
+    [3,2,1]
+])
+print m
 #
 # class Matrix(collections.Sequence):
 #     __slots__ = ("row", "col", "cols", "rows")
