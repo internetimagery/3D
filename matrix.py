@@ -15,6 +15,10 @@ class Matrix(group.Group):
         if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))
         return s.__class__(tuple(tuple(s.row(r).dot(m.col(c)) for c in range(m.cols)) for r in range(s.rows)))
     def __repr__(s):
+        rows = ["%s" % " ".join(str(c) for c in r) for r in s]
+        border = ":"* max(len(r) for r in rows)
+        return border + "\n" + "\n".join(rows) + "\n" + border
+        print rows, border
         w = s.cols * 2 + 3 # Width
         return (":" * w) + "\n" + "\n".join( "::%s::" % " ".join(str(c) for c in r) for r in s) + "\n" + (":" * w)
     def _determinant(s):
@@ -37,13 +41,7 @@ class Matrix(group.Group):
     def submatrix(s, row, col): return s.__class__(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
     cofactorMatrix = property(lambda s: s.__class__(tuple(tuple(s.cofactor(r,c) for c in range(s.cols)) for r in range(s.rows))))
     adjoint = property(lambda s: s.cofactorMatrix.transpose)
-
-m = Matrix([
-    [3,0,2],
-    [2,0,-2],
-    [0,1,1]
-])
-print m.adjoint
+    inverse = property(lambda s: s.adjoint * ( 1.0 / s.determinant))
 
 if __name__ == '__main__':
     m1 = Matrix([
@@ -55,6 +53,11 @@ if __name__ == '__main__':
         [1,2,3]
     ])
     m3 = Identity(3)
+    m4 = Matrix([
+        [3,0,2],
+        [2,0,-2],
+        [0,1,1]
+    ])
     assert m1 == m1
     assert m1 != m2
     assert m1.transpose == Matrix([[1,3], [2,2], [3,1]])
@@ -67,4 +70,5 @@ if __name__ == '__main__':
     assert Matrix([[4,6],[3,8]]).determinant == 14
     assert Matrix([[6,1,1],[4,-2,5],[2,8,7]]).determinant == -306
     assert Matrix([[1,2,3],[4,5,6],[7,8,9]]).determinant == 0
+    assert m4 * m4.inverse == m3
     print "All good."

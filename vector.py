@@ -26,4 +26,5 @@ if __name__ == '__main__':
     assert round(v1.magnitude, 2) == 3.74
     assert round(v1.angle(v2), 2) == 44.42
     assert v1.normalized < Vector(1,1,1)
+    assert v1 + 1 == Vector(2,3,4)
     print "All good."
