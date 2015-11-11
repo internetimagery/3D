@@ -20,7 +20,7 @@ class Matrix(group.Group):
     def _determinant(s):
         if s.rows != s.cols: raise ValueError, "Matrix must be square"
         if s.rows == 2: return s[0][0] * s[1][1] - s[0][1] * s[1][0]
-        calc = tuple(s[0][top] * s._isolated(0, top).determinant for top in range(s.rows))
+        calc = tuple(s[0][top] * s.cofactor(0, top).determinant for top in range(s.rows))
         result = 0
         for i in range(len(calc)):
             result = result - calc[i] if i % 2 else result + calc[i]
@@ -31,7 +31,7 @@ class Matrix(group.Group):
     determinant = property(lambda s: s._determinant())
     def row(s, r): return s[r]
     def __div__(s, m): raise NotImplementedError
-    def _isolated(s, row, col): return Matrix(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
+    def cofactor(s, row, col): return Matrix(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
 
 if __name__ == '__main__':
     m1 = Matrix([
