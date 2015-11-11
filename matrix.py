@@ -9,8 +9,8 @@ def Identity(size):
 
 class Matrix(group.Group):
     __slots__ = ()
-    rows = None
-    cols = None
+    rows = property(lambda s: len(s))
+    cols = property(lambda s: len(s[0]))
     def __mul__(s, m):
         if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))
         return s.__class__(tuple(tuple(s.row(r).dot(m.col(c)) for c in range(m.cols)) for r in range(s.rows)))
@@ -19,28 +19,17 @@ class Matrix(group.Group):
         return (":" * w) + "\n" + "\n".join( "::%s::" % " ".join(str(c) for c in r) for r in s) + "\n" + (":" * w)
     transpose = property(lambda s: s.__class__(zip(*s)))
     def col(s, c): return vector.Vector(r[c] for r in s)
-    def __new__(s, m):
-        m = tuple(vector.Vector(r) for r in m)
-        s.rows = len(m); s.cols = len(m[0])
-        return group.Group.__new__(s, m)
+    def __new__(cls, m): return group.Group.__new__(cls, tuple(vector.Vector(r) for r in m))
     def row(s, r): return s[r]
     def _determinant(s):
         if s.rows != s.cols: raise ValueError, "Matrix must be square"
         if s.rows == 2: return s[0][0] * s[1][1] - s[0][1] * s[1][0]
-        result = None
-        for t in range(s.rows):
-            print s[0][t]
-            m = tuple(tuple(s[r][c] for c in range(s.cols) if c != t) for r in range(1, s.rows))
-            print Matrix(m) if t else m
-            # if r:
-            #     print t
-            #     print tuple(c for c in range(s.cols) if c != r)
-
+        calc = tuple(s[0][top] * Matrix(tuple(tuple(s[r][c] for c in range(s.cols) if c != top) for r in range(1, s.rows))).determinant for top in range(s.rows))
+        result = 0
+        for i in range(len(calc)):
+            result = result - calc[i] if i % 2 else result + calc[i]
+        return result
     determinant = property(lambda s: s._determinant())
-
-m = Matrix([[6,1,1],[4,-2,5],[2,8,7]])
-print m
-print m.determinant
 
 if __name__ == '__main__':
     m1 = Matrix([
@@ -62,4 +51,6 @@ if __name__ == '__main__':
     assert m1 * m2 == Matrix([[5,6,7],[11,10,9]])
     assert m3 == Matrix([[1,0,0],[0,1,0],[0,0,1]])
     assert Matrix([[4,6],[3,8]]).determinant == 14
+    assert Matrix([[6,1,1],[4,-2,5],[2,8,7]]).determinant == -306
+    assert Matrix([[1,2,3],[4,5,6],[7,8,9]]).determinant == 0
     print "All good."
