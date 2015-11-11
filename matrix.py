@@ -31,7 +31,9 @@ class Matrix(group.Group):
     determinant = property(lambda s: s._determinant())
     def row(s, r): return s[r]
     def __div__(s, m): raise NotImplementedError
-    def cofactor(s, row, col): return Matrix(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
+    def cofactor(s, row, col):
+        m = Matrix(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
+        return +m if row % 2 == col % 2 else -m
 
 if __name__ == '__main__':
     m1 = Matrix([
