@@ -34,23 +34,16 @@ class Matrix(group.Group):
     def cofactor(s, row, col):
         m = s.submatrix(row, col).determinant
         return +m if row % 2 == col % 2 else -m
-    def submatrix(s, row, col): return Matrix(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
+    def submatrix(s, row, col): return s.__class__(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
+    cofactorMatrix = property(lambda s: s.__class__(tuple(tuple(s.cofactor(r,c) for c in range(s.cols)) for r in range(s.rows))))
+    adjoint = property(lambda s: s.cofactorMatrix.transpose)
 
 m = Matrix([
-    [1,4,7],
-    [3,0,5],
-    [-1,9,11]
+    [3,0,2],
+    [2,0,-2],
+    [0,1,1]
 ])
-sub = m.submatrix(1,2)
-print sub.determinant
-print m.cofactor(1,2)
-# m = Matrix([
-#     [1,2,3],
-#     [0,4,5],
-#     [1,0,6]
-# ])
-# c = m.minors()
-# print c
+print m.adjoint
 
 if __name__ == '__main__':
     m1 = Matrix([
