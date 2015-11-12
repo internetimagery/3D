@@ -21,7 +21,7 @@ class Matrix(group.Group):
         return s * m.inverse
     def __new__(cls, m): return group.Group.__new__(cls, tuple(vector.Vector(r) for r in m))
     def __repr__(s):
-        string = [[str(c) for c in r] for r in s]
+        string = tuple(tuple(str(c) for c in r) for r in s)
         col_size = max(max(len(c) for c in r) for r in string)
         border = "\n%s\n" % (":" * (col_size * s.cols + s.cols + 3))
         m = "\n".join("::%s::" % " ".join(c.center(col_size) for c in r) for r in string)
@@ -46,6 +46,8 @@ class Matrix(group.Group):
     def cofactor(s, row, col):
         m = s.submatrix(row, col).determinant
         return +m if row % 2 == col % 2 else -m
+
+
 
 if __name__ == '__main__':
     m1 = Matrix([
