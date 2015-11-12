@@ -5,7 +5,7 @@ class Group(tuple):
     def __neg__(s): return s.__class__(-a for a in s)
     def __pos__(s): return s.__class__(+a for a in s)
     def __ne__(s, v): return False if s == v else True
-    def __nonzero__(s): return 1 != len(set(a for a in s if not a))
+    def __nonzero__(s): return True in set(True if a else False for a in s)
     def __add__(s, v): return s.__class__(a + b for a, b in zip(s, s._scale(v)))
     def __div__(s, v): return s.__class__(a / b for a, b in zip(s, s._scale(v)))
     def __mod__(s, v): return s.__class__(a % b for a, b in zip(s, s._scale(v)))
