@@ -5,7 +5,7 @@ import vector
 
 def Identity(size):
     num = range(size)
-    return Matrix(tuple(tuple(1 if a == b else 0 for b in num) for a in num))
+    return Matrix(tuple(tuple(1.0 if a == b else 0.0 for b in num) for a in num))
 
 class Matrix(group.Group):
     __slots__ = ()
@@ -15,12 +15,11 @@ class Matrix(group.Group):
         if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))
         return s.__class__(tuple(tuple(s.row(r).dot(m.col(c)) for c in range(m.cols)) for r in range(s.rows)))
     def __repr__(s):
-        rows = ["%s" % " ".join(str(c) for c in r) for r in s]
-        border = ":"* max(len(r) for r in rows)
-        return border + "\n" + "\n".join(rows) + "\n" + border
-        print rows, border
-        w = s.cols * 2 + 3 # Width
-        return (":" * w) + "\n" + "\n".join( "::%s::" % " ".join(str(c) for c in r) for r in s) + "\n" + (":" * w)
+        string = [[str(c) for c in r] for r in s]
+        col_size = max(max(len(c) for c in r) for r in string)
+        border = "\n%s\n" % (":" * (col_size * s.cols + s.cols + 3))
+        m = "\n".join("::%s::" % " ".join(c.center(col_size) for c in r) for r in string)
+        return border + m + border
     @property
     def determinant(s):
         if s.rows != s.cols: raise ValueError, "Matrix must be square"
@@ -33,12 +32,14 @@ class Matrix(group.Group):
     @property
     def inverse(s):
         det = s.determinant
-        return s.adjoint * ( 1.0 / det) if det else None
+        return s.adjoint * ( 1.0 / det) if det else 0.0
     def __new__(cls, m): return group.Group.__new__(cls, tuple(vector.Vector(r) for r in m))
     def col(s, c): return vector.Vector(r[c] for r in s)
     transpose = property(lambda s: s.__class__(zip(*s)))
     def row(s, r): return s[r]
-    def __div__(s, m): raise NotImplementedError
+    def __div__(s, m):
+        if type(m) == float or type(m) == int: raise ValueError, "Can only divide by another matrix"
+        return s * m.inverse
     def cofactor(s, row, col):
         m = s.submatrix(row, col).determinant
         return +m if row % 2 == col % 2 else -m
@@ -75,3 +76,4 @@ if __name__ == '__main__':
     assert Matrix([[1,2,3],[4,5,6],[7,8,9]]).determinant == 0
     assert m4 * m4.inverse == m3
     print "All good."
+    print Matrix([[1,2,3],[4.34,5.6534543,3]])
