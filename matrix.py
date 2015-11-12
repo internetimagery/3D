@@ -14,6 +14,12 @@ class Matrix(group.Group):
     def __mul__(s, m):
         if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))
         return s.__class__(tuple(tuple(s.row(r).dot(m.col(c)) for c in range(m.cols)) for r in range(s.rows)))
+    cofactorMatrix = property(lambda s: s.__class__(tuple(tuple(s.cofactor(r,c) for c in range(s.cols)) for r in range(s.rows))))
+    def submatrix(s, row, col): return s.__class__(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
+    def __div__(s, m):
+        if type(m) == float or type(m) == int: raise ValueError, "Can only divide by another matrix"
+        return s * m.inverse
+    def __new__(cls, m): return group.Group.__new__(cls, tuple(vector.Vector(r) for r in m))
     def __repr__(s):
         string = [[str(c) for c in r] for r in s]
         col_size = max(max(len(c) for c in r) for r in string)
@@ -29,23 +35,17 @@ class Matrix(group.Group):
         for i in range(len(calc)):
             result = result - calc[i] if i % 2 else result + calc[i]
         return result
+    adjoint = property(lambda s: s.cofactorMatrix.transpose)
     @property
     def inverse(s):
         det = s.determinant
         return s.adjoint * ( 1.0 / det) if det else 0.0
-    def __new__(cls, m): return group.Group.__new__(cls, tuple(vector.Vector(r) for r in m))
     def col(s, c): return vector.Vector(r[c] for r in s)
     transpose = property(lambda s: s.__class__(zip(*s)))
     def row(s, r): return s[r]
-    def __div__(s, m):
-        if type(m) == float or type(m) == int: raise ValueError, "Can only divide by another matrix"
-        return s * m.inverse
     def cofactor(s, row, col):
         m = s.submatrix(row, col).determinant
         return +m if row % 2 == col % 2 else -m
-    def submatrix(s, row, col): return s.__class__(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
-    cofactorMatrix = property(lambda s: s.__class__(tuple(tuple(s.cofactor(r,c) for c in range(s.cols)) for r in range(s.rows))))
-    adjoint = property(lambda s: s.cofactorMatrix.transpose)
 
 if __name__ == '__main__':
     m1 = Matrix([
@@ -76,4 +76,3 @@ if __name__ == '__main__':
     assert Matrix([[1,2,3],[4,5,6],[7,8,9]]).determinant == 0
     assert m4 * m4.inverse == m3
     print "All good."
-    print Matrix([[1,2,3],[4.34,5.6534543,3]])
