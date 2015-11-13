@@ -68,8 +68,19 @@ m1 = heading(math.radians(30)) # z
 m2 = attitude(math.radians(40)) # y
 m3 = bank(math.radians(50)) # x
 m4 = (m1 * m2) * m3
-an = [math.degrees(a) for a in euler(m4)]
-print an
+e = euler(m4)[0]
+print math.degrees(e)
+m5 = bank(e * -1)
+m4 *= m5
+e = euler(m4)[1]
+print math.degrees(e)
+m5 = attitude(e * -1)
+m4 *= m5
+e = euler(m4)[2]
+print math.degrees(e)
+
+
+# the dot product of two normalized vectors is the COSINE of the angle between them; arccos(dot(a,b)) would give you the angle (in radians)
 
 #
 #
