@@ -4,11 +4,12 @@ A Vector in 3D space
 import math
 import collections
 
-Vector3D = collections.namedtuple("Vector", ("x","y","z"))
-class Vector(Vector3D):
+_3D = collections.namedtuple("Vector", ("x","y","z"))
+class Vector(_3D):
     """
     A Simple Vector that allows math operations to be performed on it.
     """
+    __slots__ = ()
     def __new__(cls, *pos):
         """
         Create a new Vector after each operation.
@@ -17,7 +18,7 @@ class Vector(Vector3D):
             x, y, z = pos if len(pos) == 3 else pos[0]
         except:
             raise ValueError, "3D Vector must consist of three numbers. X, Y, Z."
-        return Vector3D.__new__(cls, float(x), float(y), float(z))
+        return _3D.__new__(cls, float(x), float(y), float(z))
     def _scalar(func):
         """
         Allow scalar operations.
@@ -60,32 +61,48 @@ class Vector(Vector3D):
     @_scalar
     def __floordiv__(s, v): return s.__class__(a // b for a, b in zip(s, v))
     # More Functionality
-    def __mul__(s, v): return s.dot(v) # (*)
+    def __mul__(s, v):
+        t = type(v)
+        if t == int or t == float: return s.__class__(a * v for a in s)
+        return s.dot(v) # (*)
     def dot(s, v):
         """
         Create a Dot product between two vectors.
         """
-        if type(v) != s.__class__: raise TypeError, "Dot Product requires two Vectors."
+        if len(v) != 3: raise TypeError, "Dot Product requires two Vectors."
         return sum(a * b for a, b in zip(s, v))
     def __xor__(s, v): return s.cross(v) # (^)
     def cross(s, v):
         """
         Create a Cross product between two vectors.
         """
-        if type(v) != s.__class__: raise TypeError, "Cross Product requires two Vectors."
+        if len(v) != 3: raise TypeError, "Cross Product requires two Vectors."
         return s.__class__(
             s[1] * v[2] - v[1] * s[2],
             s[2] * v[0] - v[2] * s[0],
             s[0] * v[1] - v[0] * s[1])
     def angle(s, v):
         """
-        Calculate the angle between two Vectors. Result in Radians.
+        Get the angle between two Vectors. Result in Radians.
         """
-        if type(v) != s.__class__: raise TypeError, "Angle requires two Vectors."
-        m = s.magnitude * v.magnitude
-        return math.acos((s.dot(v) / m) if m else 0.0)
-    @property
-    def unit(s): return s.magnitude
+        try:
+            m = s.magnitude * v.magnitude
+            return math.acos((s.dot(v) / m) if m else 0.0)
+        except AttributeError:
+            raise TypeError, "Angle requires two Vectors."
+    def rotate(s, v, a):
+        """
+        Rotate Vector around another Vector by a specified number of Radians.
+        """
+        try:
+            cos, sin = math.cos(a), math.sin(a)
+            up = v.unit
+            right = up.cross(s)
+            out = right.cross(up)
+            return up * (s * up) + (out * cos) + (right * sin)
+        except (TypeError, AttributeError):
+            raise TypeError, "Rotate requires two Vectors and an Angle."
+    # Vector Properties
     @property
     def length(s): return s.magnitude
     @property
@@ -95,29 +112,19 @@ class Vector(Vector3D):
         """
         return math.sqrt(sum(s ** 2))
     @property
-    def normal(s): return s.normalized
+    def normalized(s): return s.unit
     @property
-    def normalized(s):
+    def normal(s): return s.unit
+    @property
+    def unit(s):
         """
-        Create a Normalized Vector out of an existing vector.
+        Create a Normalized Vector.
         """
-        m = s.magnitude
-        return (s / m) if m else s.__class__(0,0,0)
+        return (s / s.magnitude) if s else s.__class__(0, 0, 0)
 
-v1 = Vector([3,3,0])
-v2 = Vector(2,3,1)
-# v3 = v2 + 1
-print math.acos(0)
-
-# rot
-#
-# 	Operation: Returns a vector that represents the position of a point after it's rotated a specified number of radians about a specified axis.
-# 	                   Rotation is counter-clockwise as viewed downward from the axis end position.
-# 	Supported Data types: vector, float
-# 		vector rot(vector point, vector axis, float angle )
-# 		point is the position of a point in the world coordinate system.
-# 		axis is the axis around which the point rotates. The axis is a line that passes through the origin and the specified axis position.
-# 		angle is the number of radians the point rotates.
-#
-# 	Example: rot(<<3,3,0>>,<<1,0,0>>,0.5) Returns <<3, 2.633, 1.438>>
-# 	               This is a vector representing the position of point <<3,3,0>> after rotating it 0.5 radians around the axis represented by <<1,0,0>>
+class Point(_3D):
+    """
+    A single point in 3D space.
+    """
+    def distance(s, v):
+        return Vector(b - a for a, b in zip(s, v)).length
