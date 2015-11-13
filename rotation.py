@@ -5,15 +5,9 @@ import matrix
 import collections
 
 
+# http://mathworld.wolfram.com/EulerAngles.html
 
-
-
-
-
-
-
-
-def yaw(radian): # Z
+def D(radian): # Z
     cos, sin = math.cos(radian), math.sin(radian)
     return matrix.Matrix((
         (cos,   sin,    0),
@@ -21,35 +15,60 @@ def yaw(radian): # Z
         (0,     0,      1)
     ))
 
-def roll(radian): # X
+def C(radian): # X
     cos, sin = math.cos(radian), math.sin(radian)
     return matrix.Matrix((
         (1,     0,      0),
         (0,     cos,  sin),
-        (0,    -sin,  cos)
+        (0,     -sin, cos)
     ))
 
-def pitch(radian): # Y
+B = D
+
+# http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm
+
+def heading(radian): # Azimuth | Yaw | Theta
     cos, sin = math.cos(radian), math.sin(radian)
     return matrix.Matrix((
-        (cos,   0,   -sin),
+        (cos,   -sin,   0),
+        (sin,  cos,     0),
+        (0,     0,      1)
+    ))
+def attitude(radian): # Elevation | Pitch | Phi
+    cos, sin = math.cos(radian), math.sin(radian)
+    return matrix.Matrix((
+        (cos,   0,    sin),
         (0,     1,      0),
-        (sin,   0,    cos)
+        (-sin,  0,    cos)
+    ))
+def bank(radian): # Tilt | Roll | Psi
+    cos, sin = math.cos(radian), math.sin(radian)
+    return matrix.Matrix((
+        (1,     0,      0),
+        (0,     cos, -sin),
+        (0,     sin,  cos)
     ))
 
-def angle(m):
-    # heading, attitude, bank
-    return (
-        math.atan2(m[0][2],m[2][2]) if m[1][0] == 1.0 or m[1][0] == -1 else math.atan2(-m[2][0],m[0][0]),
-        math.asin(m[1][0]),
-        0 if m[1][0] == 1.0 or m[1][0] == -1 else math.atan2(-m[1][2], m[1][1])
-    )
+def euler(m):
+    if m[1][0] > 0.9998: # North pole singularity
+        heading = math.atan2(m[0][2], m[2][2])
+        attitude = math.pi/2
+        bank = 0
+    elif m[1][0] < -0.9998: # Singularity at south pole
+        heading = math.atan2(m[0][2], m[2][2])
+        attitude = -math.pi/2
+        bank = 0
+    else:
+        heading = math.atan2(-m[2][0], m[0][0])
+        attitude = math.asin(m[1][0])
+        bank = math.atan2(-m[1][2], m[1][1])
+    return (bank, attitude, heading)
 
-m1 = pitch(math.radians(40))
-m2 = yaw(math.radians(25))
-m3 = yaw(math.radians(15))
-m4 = m1 * m2 * m3
-an = [math.degrees(a) for a in angle(m4)]
+m1 = heading(math.radians(30)) # z
+m2 = attitude(math.radians(40)) # y
+m3 = bank(math.radians(50)) # x
+m4 = (m1 * m2) * m3
+an = [math.degrees(a) for a in euler(m4)]
 print an
 
 #
