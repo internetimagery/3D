@@ -15,7 +15,7 @@ class Vector(_3D):
         Create a new Vector after each operation.
         """
         try:
-            x, y, z = pos if len(pos) == 3 else pos[0]
+            x, y, z = pos if len(pos) == 3 else pos[0] if pos else (0.0,0.0,0.0)
         except:
             raise ValueError, "3D Vector must consist of three numbers. X, Y, Z."
         return _3D.__new__(cls, float(x), float(y), float(z))

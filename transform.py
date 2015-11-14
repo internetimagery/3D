@@ -38,3 +38,45 @@ class Transform(tuple):
         string = tuple(tuple(str(b) for b in a) for a in s)
         col = max(max(len(b) for b in a) for a in string)
         return "\n".join(" ".join(b.center(col) for b in a) for a in string)
+    # Basic Math Operations
+    def __add__(s, m): return s.__class__(tuple(s[r][c] + m[r][c] for c in range(4)) for r in range(4))
+
+
+t = Transform()
+print t + t
+    #
+    # def __mul__(s, m):
+    #     if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))
+    #     return s.__class__(tuple(tuple(s.row(r).dot(m.col(c)) for c in range(m.cols)) for r in range(s.rows)))
+    # cofactorMatrix = property(lambda s: s.__class__(tuple(tuple(s.cofactor(r,c) for c in range(s.cols)) for r in range(s.rows))))
+    # def submatrix(s, row, col): return s.__class__(tuple(tuple(s[r][c] for c in range(s.cols) if c != col) for r in range(s.rows) if r != row))
+    # def __div__(s, m):
+    #     if type(m) == float or type(m) == int: raise ValueError, "Can only divide by another matrix"
+    #     return s * m.inverse
+    # def __new__(cls, m): return group.Group.__new__(cls, tuple(vector.Vector(r) for r in m))
+    # def __repr__(s):
+    #     string = tuple(tuple(str(c) for c in r) for r in s)
+    #     col_size = max(max(len(c) for c in r) for r in string)
+    #     border = "\n%s\n" % (":" * (col_size * s.cols + s.cols + 3))
+    #     m = "\n".join("::%s::" % " ".join(c.center(col_size) for c in r) for r in string)
+    #     return border + m + border
+    # @property
+    # def determinant(s):
+    #     if s.rows != s.cols: raise ValueError, "Matrix must be square"
+    #     if s.rows == 2: return s[0][0] * s[1][1] - s[0][1] * s[1][0]
+    #     calc = tuple(s[0][top] * s.submatrix(0, top).determinant for top in range(s.rows))
+    #     result = 0
+    #     for i in range(len(calc)):
+    #         result = result - calc[i] if i % 2 else result + calc[i]
+    #     return result
+    # adjoint = property(lambda s: s.cofactorMatrix.transpose)
+    # @property
+    # def inverse(s):
+    #     det = s.determinant
+    #     return s.adjoint * ( 1.0 / det) if det else 0.0
+    # def col(s, c): return vector.Vector(r[c] for r in s)
+    # transpose = property(lambda s: s.__class__(zip(*s)))
+    # def row(s, r): return s[r]
+    # def cofactor(s, row, col):
+    #     m = s.submatrix(row, col).determinant
+    #     return +m if row % 2 == col % 2 else -m
