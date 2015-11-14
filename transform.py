@@ -1,21 +1,41 @@
-# Transformation
+# Transformation Matrix
 
-import matrix
+import math
+import itertools
 
-class Transform(matrix.Matrix):
-    pass
+class Transform(tuple):
+    """
+    Transformation Matrix
+    """
+    __slots__ = ()
+    cols = 4
+    rows = 4
+    def __new__(cls, *nums):
+        try:
+            l = len(nums)
+            if l == 16: # Full array of numbers
+                return tuple.__new__(cls, (nums[i:i+4] for i in range(0,16,4)))
+            if l == 4: # Creation by rows
+                return tuple.__new__(cls, nums)
+            if l == 1: # Iterable / Another matrix
+                return tuple.__new__(cls, nums[0])
+            if l == 0: # Empty Matrix / Identity Matrix
+                return tuple.__new__(cls, (tuple(1.0 if c == r else 0.0 for c in range(4)) for r in range(4)))
+            raise Exception
+        except:
+            raise ValueError, "Invalid arguments for Matrix."
+    def __repr__(s):
+        string = tuple(tuple(str(b) for b in a) for a in s)
+        col = max(max(len(b) for b in a) for a in string)
+        return "\n".join(" ".join(b.center(col) for b in a) for a in string)
 
-if __name__ == '__main__':
-    t1 = matrix.Identity(4)
-    print t1
-
-
-
-#  Assuming a row major 3x3 matrix, where the first row is 3-vector ''X'', then ''Y'', then ''Z''.
-#
-# X.Normalise();
-# Y.Normalise();
-# Z = X cross Y;
-# Y = Z cross X;
-#
-# That should make an orthonormal 3x3 matrix.
+t1 = Transform(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+t2 = Transform()
+t3 = Transform(
+    [1,2,3,4],
+    [5,6,7,8],
+    [9,10,11,12],
+    [13,14,15]
+)
+t4 = Transform((b for b in range(a, a+4)) for a in range(4))
+print t3
