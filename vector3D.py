@@ -48,25 +48,30 @@ class Vector(_3D):
     def __floordiv__(s, v): return s.__class__(a // b for a, b in sZip(s, v))
     # More Functionality
     def __mul__(s, v): # (*)
-        t = type(v)
-        if t == int or t == float: return s.__class__(a * v for a in s)
-        return s.dot(v)
+        try:
+            return s.dot(v)
+        except TypeError:
+            return s.__class__(a * v for a in s)
     def dot(s, v):
         """
         Create a Dot product between two vectors.
         """
-        if len(v) != 3: raise TypeError, "Dot Product requires two Vectors."
-        return sum(a * b for a, b in zip(s, v))
+        try:
+            return sum(a * b for a, b in zip(s, v))
+        except TypeError:
+            raise TypeError, "Dot Product requires two Vectors."
     def __xor__(s, v): return s.cross(v) # (^)
     def cross(s, v):
         """
         Create a Cross product between two vectors.
         """
-        if len(v) != 3: raise TypeError, "Cross Product requires two Vectors."
-        return s.__class__(
-            s[1] * v[2] - v[1] * s[2],
-            s[2] * v[0] - v[2] * s[0],
-            s[0] * v[1] - v[0] * s[1])
+        try:
+            return s.__class__(
+                s[1] * v[2] - v[1] * s[2],
+                s[2] * v[0] - v[2] * s[0],
+                s[0] * v[1] - v[0] * s[1])
+        except IndexError:
+            raise TypeError, "Cross Product requires two Vectors."
     def angle(s, v):
         """
         Get the angle between two Vectors. Result in Radians.
@@ -129,4 +134,5 @@ class Point(_3D):
 
 v1 = Vector(1,2,3)
 v2 = Vector(1.1,2,3)
-print v1 + 3
+print v1 * 3
+print v1 * v2
