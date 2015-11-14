@@ -61,10 +61,10 @@ class Vector(_3D):
     @_scalar
     def __floordiv__(s, v): return s.__class__(a // b for a, b in zip(s, v))
     # More Functionality
-    def __mul__(s, v):
+    def __mul__(s, v): # (*)
         t = type(v)
         if t == int or t == float: return s.__class__(a * v for a in s)
-        return s.dot(v) # (*)
+        return s.dot(v)
     def dot(s, v):
         """
         Create a Dot product between two vectors.
@@ -86,8 +86,7 @@ class Vector(_3D):
         Get the angle between two Vectors. Result in Radians.
         """
         try:
-            m = s.magnitude * v.magnitude
-            return math.acos((s.dot(v) / m) if m else 0.0)
+            return math.acos(s.unit * v.unit)
         except AttributeError:
             raise TypeError, "Angle requires two Vectors."
     def rotate(s, v, a):
