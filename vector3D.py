@@ -27,8 +27,6 @@ class Vector(_3D):
             t = type(v)
             if t == int or t == float:
                 v = (v, v, v)
-            elif t != s.__class__:
-                raise TypeError, "Operation requires a scalar or Vector."
             return func(s, v)
         return wrapper
     # Basic Math Operations
@@ -101,6 +99,19 @@ class Vector(_3D):
             return up * (s * up) + (out * cos) + (right * sin)
         except (TypeError, AttributeError):
             raise TypeError, "Rotate requires two Vectors and an Angle."
+    def isEquivalent(s, v, t):
+        """
+        Returns True if this vector and another are within a given tolerance of being equal.
+        """
+        return False not in set(abs(a - b) < t for a, b in zip(s, v))
+    def isParallel(s, v, t):
+        """
+        Returns True if this vector and another are within the given tolerance of being parallel.
+        """
+        try:
+            return 1 - t < s.unit * v.unit
+        except (TypeError, AttributeError):
+            raise TypeError, "Is Parallel requires two Vectors and a Tolerance."
     # Vector Properties
     @property
     def length(s): return s.magnitude
@@ -127,3 +138,7 @@ class Point(_3D):
     """
     def distance(s, v):
         return Vector(b - a for a, b in zip(s, v)).length
+
+v1 = Vector(1,2,3)
+v2 = Vector(1.1,2,3)
+print v1.isParallel(v1, 0.1)

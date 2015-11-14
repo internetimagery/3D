@@ -38,12 +38,24 @@ class Transform(tuple):
         string = tuple(tuple(str(b) for b in a) for a in s)
         col = max(max(len(b) for b in a) for a in string)
         return "\n".join(" ".join(b.center(col) for b in a) for a in string)
+    def _scalar(func):
+        """
+        Allow scalar operations.
+        """
+        def wrapper(s, m):
+            t = type(m)
+            if t == int or t == float:
+                m = itertools.repeat(itertools.repeat(m))
+            return func(s, m)
+        return wrapper
+
     # Basic Math Operations
-    def __add__(s, m): return s.__class__(tuple(s[r][c] + m[r][c] for c in range(4)) for r in range(4))
+    @_scalar
+    def __add__(s, m): return s.__class__(tuple(c1 + c2 for c1, c2 in zip(r1, r2)) for r1, r2 in zip(s, m))
 
 
 t = Transform()
-print t + t
+print t + 3
     #
     # def __mul__(s, m):
     #     if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))
