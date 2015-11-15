@@ -3,6 +3,24 @@
 import math
 import itertools
 
+def sZip(m1, m2):
+    """
+    Allow Scalar Operations.
+    """
+    try:
+        return zip(m1, m2)
+    except TypeError:
+        return zip(m1, itertools.repeat(m2))
+
+def test(m1, m2, func):
+    """
+    Test Matrix for truthiness.
+    """
+    for a, b in sZip(m1, m2):
+        for c, d in sZip(a, b):
+            if func(c, d): return True
+    return False
+
 class Transform(tuple):
     """
     Transformation Matrix
@@ -38,24 +56,45 @@ class Transform(tuple):
         string = tuple(tuple(str(b) for b in a) for a in s)
         col = max(max(len(b) for b in a) for a in string)
         return "\n".join(" ".join(b.center(col) for b in a) for a in string)
-    def _scalar(func):
-        """
-        Allow scalar operations.
-        """
-        def wrapper(s, m):
-            t = type(m)
-            if t == int or t == float:
-                m = itertools.repeat(itertools.repeat(m))
-            return func(s, m)
-        return wrapper
-
     # Basic Math Operations
-    @_scalar
-    def __add__(s, m): return s.__class__(tuple(c1 + c2 for c1, c2 in zip(r1, r2)) for r1, r2 in zip(s, m))
+    def __truediv__(s, m): return s.__div__(m)
+    def __ne__(s, m): return False if s == m else True
+    def __neg__(s): return s.__class__(tuple(-b for b in a) for a in s)
+    def __pos__(s): return s.__class__(tuple(+b for b in a) for a in s)
+    def __add__(s, m): return s.__class__(tuple(c + d for c, d in sZip(a, b)) for a, b in sZip(s, m))
+    def __sub__(s, m): return s.__class__(tuple(c - d for c, d in sZip(a, b)) for a, b in sZip(s, m))
+    def __nonzero__(s): return True if tuple(b for a in s for b in a if b) else False
+    def __mod__(s, m): return s.__class__(tuple(c % d for c, d in sZip(a, b)) for a, b in sZip(s, m))
+    def __pow__(s, m): return s.__class__(tuple(c ** d for c, d in sZip(a, b)) for a, b in sZip(s, m))
+    def __floordiv__(s, m): return s.__class__(tuple(c // d for c, d in sZip(a, b)) for a, b in sZip(s, m))
+    def __lt__(s, m): return test(s, m, lambda a, b: a < b)
+    def __gt__(s, m): return test(s, m, lambda a, b: a > b)
+    def __le__(s, m): return test(s, m, lambda a, b: a <= b)
+    def __ge__(s, m): return test(s, m, lambda a, b: a >= b)
+    def __eq__(s, m): return test(s, m, lambda a, b: a == b)
+
+    def __mul__(s, m):
+        try:
+            return s.__class__(tuple(c * d for c, d in zip(a, b)) for a, b in zip(s, m.transpose))
+        except AttributeError:
+            return s.__class__(tuple(c * d for c, d in sZip(a, b)) for a, b in sZip(s, m))
+    #     if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))
+    #     return s.__class__(tuple(tuple(s.row(r).dot(m.col(c)) for c in range(m.cols)) for r in range(s.rows)))
+
+    @property
+    def transpose(s): return s.__class__(zip(*s))
+    def __div__(s, v): return s.__class__(a / b for a, b in sZip(s, v))
 
 
-t = Transform()
-print t + 3
+t1 = Transform()
+t2 = Transform(
+    (1,2,3,4),
+    (5,6,7,8),
+    (10,11,12,13),
+    (14,15,16,17)
+)
+t3 = t1 + 5
+print t1 * 4
     #
     # def __mul__(s, m):
     #     if type(m) == int or type(m) == float: return s.__class__(tuple(tuple(c * m for c in r) for r in s))

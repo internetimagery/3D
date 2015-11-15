@@ -104,7 +104,7 @@ class Vector(_3D):
         try:
             return 1 - t < s.unit * v.unit
         except (TypeError, AttributeError):
-            raise TypeError, "Is Parallel requires two Vectors and a Tolerance."
+            raise TypeError, "\"Is Parallel\" requires two Vectors and a Float."
     # Vector Properties
     @property
     def length(s): return s.magnitude
@@ -130,9 +130,4 @@ class Point(_3D):
     A single point in 3D space.
     """
     def distance(s, v):
-        return Vector(b - a for a, b in zip(s, v)).length
-
-v1 = Vector(1,2,3)
-v2 = Vector(1.1,2,3)
-print v1 * 3
-print v1 * v2
+        return Vector(b - a for a, b in zip(s, v)).magnitude
