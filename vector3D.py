@@ -48,10 +48,14 @@ class Vector(_3D):
     def __floordiv__(s, v): return s.__class__(a // b for a, b in sZip(s, v))
     # More Functionality
     def __mul__(s, v): # (*)
-        try:
-            return s.dot(v)
+        try: # Multiplying a Matrix
+            print [sum(tuple(b * c  for b, c in zip(a, s))) for a in v]
+            return s.__class__(sum(tuple(b * c  for b, c in zip(a, s))) for a in v)
         except TypeError:
-            return s.__class__(a * v for a in s)
+            try: # Multiplying a Vector
+                return s.dot(v)
+            except TypeError:
+                return s.__class__(a * v for a in s)
     def dot(s, v):
         """
         Create a Dot product between two vectors.
@@ -135,6 +139,11 @@ class Point(_3D):
 if __name__ == '__main__':
     v1 = Vector(1,2,3)
     v2 = Vector(3,2,1)
+    m1 = (
+        (1,2,3),
+        (4,5,6),
+        (7,8,9)
+    ) # Matrix
     assert v1 == v1
     assert v1 != v2
     v3 = v1 + v2
@@ -142,5 +151,6 @@ if __name__ == '__main__':
     assert v1 * 2 == (2,4,6)
     assert v1 ** 2 == (1,4,9)
     assert v1 * v2 == 10
+    assert v1 * m1 == (14,32,50)
     assert v1 ^ v2 == (-4,8,-4)
     print "Ok!"
