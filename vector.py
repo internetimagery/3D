@@ -91,27 +91,44 @@ class Vector(tuple):
         try:
             return zip(v1, v2)
         except TypeError:
-            return zip(v1, (v2,)*len(v1))
+            try:
+                return zip(v1, (v2,)*len(v1))
+            except TypeError:
+                return zip((v1,)*len(v2), v2)
 
     # Vector Operations
 
     def __neg__(s): return s.__class__(-a for a in s)
     def __pos__(s): return s.__class__(+a for a in s)
     def __nonzero__(s): return s.test(s, lambda a, b: True if a else False)
+    def __radd__(s, v): return s.__class__(b + a for a, b in s.zip(s, v))
     def __add__(s, v): return s.__class__(a + b for a, b in s.zip(s, v))
+    def __rdiv__(s, v): return s.__class__(b / a for a, b in s.zip(s, v))
     def __div__(s, v): return s.__class__(a / b for a, b in s.zip(s, v))
+    def __rmod__(s, v): return s.__class__(b % a for a, b in s.zip(s, v))
     def __mod__(s, v): return s.__class__(a % b for a, b in s.zip(s, v))
+    def __rsub__(s, v): return s.__class__(b - a for a, b in s.zip(s, v))
     def __sub__(s, v): return s.__class__(a - b for a, b in s.zip(s, v))
+    def __rpow__(s, v): return s.__class__(b ** a for a, b in s.zip(s, v))
     def __pow__(s, v): return s.__class__(a ** b for a, b in s.zip(s, v))
-    def __truediv__(s, v): return s.__class__(a / b for a, b in s.zip(s, v))
+    def __rlt__(s, v): return s.test(v, lambda b, a: a < b)
     def __lt__(s, v): return s.test(v, lambda a, b: a < b)
+    def __rtruediv__(s, v): return s.__class__(b / a for a, b in s.zip(s, v))
+    def __truediv__(s, v): return s.__class__(a / b for a, b in s.zip(s, v))
+    def __rgt__(s, v): return s.test(v, lambda b, a: a > b)
     def __gt__(s, v): return s.test(v, lambda a, b: a > b)
+    def __rne__(s, v): return s.test(v, lambda b, a: a != b)
     def __ne__(s, v): return s.test(v, lambda a, b: a != b)
+    def __req__(s, v): return s.test(v, lambda b, a: a == b)
     def __eq__(s, v): return s.test(v, lambda a, b: a == b)
+    def __rle__(s, v): return s.test(v, lambda b, a: a <= b)
     def __le__(s, v): return s.test(v, lambda a, b: a <= b)
+    def __rge__(s, v): return s.test(v, lambda b, a: a >= b)
     def __ge__(s, v): return s.test(v, lambda a, b: a >= b)
+    def __rfloordiv__(s, v): return s.__class__(b // a for a, b in s.zip(s, v))
     def __floordiv__(s, v): return s.__class__(a // b for a, b in s.zip(s, v))
     # More Functionality
+    def __rmul__(s, v): return s.__mul__(v) # (*)
     def __mul__(s, v): # (*)
         try: # Multiplying a Matrix
             return s.__class__(sum(tuple(b * c  for b, c in zip(a, s))) for a in v)
@@ -121,6 +138,7 @@ class Vector(tuple):
             except TypeError: # Scalar
                 return s.__class__(a * v for a in s)
     def dot(s, v): return dot(s, v)
+    def __rxor__(s, v): return s.__class__(cross(v, s)) # (^)
     def __xor__(s, v): return s.__class__(cross(s, v)) # (^)
     def cross(s, v): return s.__class__(cross(s, v))
     def angle(s, v): return angle(s, v)
@@ -173,9 +191,9 @@ if __name__ == '__main__':
     assert v1 != v2
     v3 = v1 + v2
     assert v3 == (4,4,4)
-    assert v1 * 2 == (2,4,6)
+    assert 2 * v1 == (2,4,6)
     assert v1 ** 2 == (1,4,9)
     assert v1 * v2 == 10
     assert v1 * m1 == (14,32,50)
-    assert v1 ^ v2 == (-4,8,-4)
+    assert (1,2,3) ^ v2 == (-4,8,-4)
     print "Ok!"
