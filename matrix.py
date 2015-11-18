@@ -52,6 +52,7 @@ def inverse(m):
     scalar = (1.0 / det) if det else 0.0
     return tuple(tuple(c * scalar for c in r) for r in adjugate)
 
+
 # Matrix Datatype
 
 class Matrix(tuple):
