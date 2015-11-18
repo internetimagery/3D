@@ -71,7 +71,7 @@ class Vector(_3D):
                 s[2] * v[0] - v[2] * s[0],
                 s[0] * v[1] - v[0] * s[1])
         except IndexError:
-            raise TypeError, "Cross Product requires two Vectors."
+            raise TypeError, "Cross Product requires two Vectors of 3 dimensions."
     def angle(s, v):
         """
         Get the angle between two Vectors. Result in Radians.
@@ -131,3 +131,16 @@ class Point(_3D):
     """
     def distance(s, v):
         return Vector(b - a for a, b in zip(s, v)).magnitude
+
+if __name__ == '__main__':
+    v1 = Vector(1,2,3)
+    v2 = Vector(3,2,1)
+    assert v1 == v1
+    assert v1 != v2
+    v3 = v1 + v2
+    assert v3 == (4,4,4)
+    assert v1 * 2 == (2,4,6)
+    assert v1 ** 2 == (1,4,9)
+    assert v1 * v2 == 10
+    assert v1 ^ v2 == (-4,8,-4)
+    print "Ok!"
