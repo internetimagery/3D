@@ -93,7 +93,7 @@ class Matrix(tuple):
     def __repr__(s):
         st = tuple(tuple(str(c) for c in r) for r in s)
         length = max(max(len(c) for c in r) for r in st)
-        return "\n" + "\n".join(" ".join(c.center(length) for c in r) for r in st)
+        return "\n" + "\n".join(" ".join(c.center(length) for c in r) for r in st) + "\n"
 
     # Matrix Cell Access and Sizing
 
@@ -128,33 +128,45 @@ class Matrix(tuple):
 
     def __neg__(s): return s.__class__(tuple(-c for c in r) for r in s)
     def __pos__(s): return s.__class__(tuple(+c for c in r) for r in s)
+    def __rsub__(s, m): return m + -s
     def __sub__(s, m): return s + -m
+    def __radd__(s, m): return s.__add__(m)
     def __add__(s, m):
         try: # Adding Matrix
             return s.__class__(tuple(c1 + c2 for c1, c2 in zip(r1, r2)) for r1, r2 in zip(s, m))
         except TypeError: # Adding Scalar
             return s.__class__(tuple(c + m for c in r) for r in s)
+    def __rne__(s, m): return s.test(m, lambda b, a: a != b)
     def __ne__(s, m): return s.test(m, lambda a, b: a != b)
+    def __req__(s, m): return s.test(m, lambda b, a: a != b)
     def __eq__(s, m): return s.test(m, lambda a, b: a == b)
+    def __rlt__(s, m): return s.test(m, lambda b, a: a != b)
     def __lt__(s, m): return s.test(m, lambda a, b: a < b)
+    def __rle__(s, m): return s.test(m, lambda b, a: a != b)
     def __le__(s, m): return s.test(m, lambda a, b: a <= b)
+    def __rgt__(s, m): return s.test(m, lambda b, a: a != b)
     def __gt__(s, m): return s.test(m, lambda a, b: a > b)
+    def __rge__(s, m): return s.test(m, lambda b, a: a != b)
     def __ge__(s, m): return s.test(m, lambda a, b: a >= b)
     def __nonzero__(s): return s.test(s, lambda a, b: True if a else False)
     def __truediv__(s): return s.__div__(m)
-    def __mul__(s, m):
+    def __rmul__(s, m): return s.__mul(m, s)
+    def __mul__(s, m): return s.__mul(s, m)
+    def __mul(s, m1, m2):
         try: # Multiplying a Matrix
-            return s.__class__(multiply(s, m))
+            return s.__class__(multiply(m1, m2))
         except TypeError: # Perhaps we're trying for a Vector Product?
             try:
-                return multiplyVector(s, m)
+                return multiplyVector(m1, m2)
             except TypeError: # Perhaps we're mutiplying by a Scalar?
-                return s.__class__(tuple(c * m for c in r) for r in s)
-    def __div__(s, m):
+                return s.__class__(tuple(c * m2 for c in r) for r in m1)
+    def __div__(s, m): return s.__div(s, m)
+    def __rdiv__(s, m): return s.__div(m, s)
+    def __div(s, m1, m2):
         try: # Another matrix
-            return s * inverse(m)
+            return m1 * inverse(m2)
         except AttributeError: # Scalar
-            return s.__class__(tuple(c / m for c in r) for r in s)
+            return s.__class__(tuple(c / m2 for c in r) for r in m1)
 
     # Other Properties
 
@@ -182,6 +194,7 @@ if __name__ == '__main__':
     )
     v1 = (1,2,3) # Vector
     s1 = 2 # Scalar
+    3 * m1
     assert m3.row(1) == (4,5,6)
     assert m3.rows == 3
     assert m3.col(0) == (1,4,7)
