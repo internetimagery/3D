@@ -45,7 +45,9 @@ def angle(v1, v2):
     Get the angle between two Vectors. Result in Radians.
     """
     try:
-        return math.acos(a * b for a, b in zip(normalize(v1), normalize(v2)))
+        m = magnitude(v1) * magnitude(v2)
+        d = dot(v1, v2)
+        return math.acos((d / m) if m else 0.0)
     except AttributeError:
         raise TypeError, "Angle requires two Vectors."
 
