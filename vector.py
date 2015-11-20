@@ -4,20 +4,20 @@ import math
 
 # Vector Functionality
 
-def magnitude(v):
+def Magnitude(v):
     """
     Calculate the magnitude / length / unit of a Vector. |s|
     """
     return math.sqrt(sum(a ** 2 for a in v))
 
-def normalize(v):
+def Normalize(v):
     """
     Normalize a Vector.
     """
-    m = magnitude(v)
+    m = Magnitude(v)
     return tuple(a / m for a in v) if m else (0.0,)*len(v)
 
-def dot(v1, v2):
+def Dot(v1, v2):
     """
     Calculate the Dot Product between two Vectors.
     """
@@ -26,7 +26,7 @@ def dot(v1, v2):
     except TypeError:
         raise TypeError, "Dot Product requires two Vectors."
 
-def cross(v1, v2):
+def Cross(v1, v2):
     """
     Get the Normal / Cross Product of two vectors.
     """
@@ -40,29 +40,55 @@ def cross(v1, v2):
     except ValueError:
         raise TypeError, "Cross Product requires two Vectors of 3 dimensions."
 
-def angle(v1, v2):
+def Angle(v1, v2):
     """
     Get the angle between two Vectors. Result in Radians.
     """
     try:
-        m = magnitude(v1) * magnitude(v2)
-        d = dot(v1, v2)
+        m = Magnitude(v1) * Magnitude(v2)
+        d = Dot(v1, v2)
         return math.acos((d / m) if m else 0.0)
     except AttributeError:
         raise TypeError, "Angle requires two Vectors."
 
-def rotate(v1, v2, a):
+def Rotate(v1, v2, a):
     """
     Rotate Vector around another Vector by a specified Angle in Radians.
     """
     try:
         cos, sin = math.cos(a), math.sin(a)
-        up = normalize(v2)
-        right = cross(up, v1)
-        out = cross(right, up)
+        up = Normalize(v2)
+        right = Cross(up, v1)
+        out = Cross(right, up)
         return tuple( _up * (_v1 * _up) + (_out * _cos) + (_right * _sin) for _up, _right, _out, _v1, _sin, _cos in zip(up, right, out, v1, (sin,)*len(v1), (cos,)*len(v1)))
     except TypeError:
         raise TypeError, "Rotate requires two Vectors and an Angle."
+
+
+def Map(func, v, dt):
+    """
+    Map Vector to Data Type
+    """
+    try: # 2 Dimensions
+        return tuple(sum(tuple(func(a, c) for a, c in zip(v, r))) for r in dt)
+    except TypeError:
+        try: # 1 Dimension
+            return tuple(func(a, b) for a, b in zip(v, dt))
+        except TypeError: # Scalar
+            return tuple(func(a, dt) for a in v)
+
+def Test(func, v1, v2):
+    """
+    Test elements in Vector(s) for truthiness
+    """
+    result = False
+    def check(*args):
+        if func(*args): raise KeyboardInterrupt
+    try:
+        Map(check, v1, v2)
+    except KeyboardInterrupt:
+        result = True
+    return result
 
 class Vector(tuple):
     """
@@ -78,75 +104,56 @@ class Vector(tuple):
         """
         return tuple.__new__(cls, pos[0] if len(pos) == 1 else pos)
 
-    # Vector Utility
-
-    def test(s, v, func):
-        """
-        Test Func for truthiness.
-        """
-        for a, b in zip(s, v):
-            if func(a, b): return True
-        return False
-
-    def zip(s, v1, v2):
-        """
-        Allow Scalar Operations.
-        """
-        try:
-            return zip(v1, v2)
-        except TypeError:
-            try:
-                return zip(v1, (v2,)*len(v1))
-            except TypeError:
-                return zip((v1,)*len(v2), v2)
-
     # Vector Operations
 
-    def __neg__(s): return s.__class__(-a for a in s)
-    def __pos__(s): return s.__class__(+a for a in s)
-    def __nonzero__(s): return s.test(s, lambda a, b: True if a else False)
-    def __radd__(s, v): return s.__class__(b + a for a, b in s.zip(s, v))
-    def __add__(s, v): return s.__class__(a + b for a, b in s.zip(s, v))
-    def __rdiv__(s, v): return s.__class__(b / a for a, b in s.zip(s, v))
-    def __div__(s, v): return s.__class__(a / b for a, b in s.zip(s, v))
-    def __rmod__(s, v): return s.__class__(b % a for a, b in s.zip(s, v))
-    def __mod__(s, v): return s.__class__(a % b for a, b in s.zip(s, v))
-    def __rsub__(s, v): return s.__class__(b - a for a, b in s.zip(s, v))
-    def __sub__(s, v): return s.__class__(a - b for a, b in s.zip(s, v))
-    def __rpow__(s, v): return s.__class__(b ** a for a, b in s.zip(s, v))
-    def __pow__(s, v): return s.__class__(a ** b for a, b in s.zip(s, v))
-    def __rlt__(s, v): return s.test(v, lambda b, a: a < b)
-    def __lt__(s, v): return s.test(v, lambda a, b: a < b)
-    def __rtruediv__(s, v): return s.__class__(b / a for a, b in s.zip(s, v))
-    def __truediv__(s, v): return s.__class__(a / b for a, b in s.zip(s, v))
-    def __rgt__(s, v): return s.test(v, lambda b, a: a > b)
-    def __gt__(s, v): return s.test(v, lambda a, b: a > b)
-    def __rne__(s, v): return s.test(v, lambda b, a: a != b)
-    def __ne__(s, v): return s.test(v, lambda a, b: a != b)
-    def __req__(s, v): return s.test(v, lambda b, a: a == b)
-    def __eq__(s, v): return s.test(v, lambda a, b: a == b)
-    def __rle__(s, v): return s.test(v, lambda b, a: a <= b)
-    def __le__(s, v): return s.test(v, lambda a, b: a <= b)
-    def __rge__(s, v): return s.test(v, lambda b, a: a >= b)
-    def __ge__(s, v): return s.test(v, lambda a, b: a >= b)
-    def __rfloordiv__(s, v): return s.__class__(b // a for a, b in s.zip(s, v))
-    def __floordiv__(s, v): return s.__class__(a // b for a, b in s.zip(s, v))
-    # More Functionality
-    def __rmul__(s, v): return s.__mul__(v) # (*)
+    def __lt__(s, v): return Test((lambda x,y: x < y ), s, v)
+    def __gt__(s, v): return Test((lambda x,y: x > y ), s, v)
+    def __ne__(s, v): return Test((lambda x,y: x != y ), s, v)
+    def __eq__(s, v): return Test((lambda x,y: x == y ), s, v)
+    def __le__(s, v): return Test((lambda x,y: x <= y ), s, v)
+    def __ge__(s, v): return Test((lambda x,y: x >= y ), s, v)
+    def __rlt__(s, v): return Test((lambda x,y: y < x ), s, v)
+    def __rgt__(s, v): return Test((lambda x,y: y > x ), s, v)
+    def __rne__(s, v): return Test((lambda x,y: y != x ), s, v)
+    def __req__(s, v): return Test((lambda x,y: y == x ), s, v)
+    def __rle__(s, v): return Test((lambda x,y: y <= x ), s, v)
+    def __rge__(s, v): return Test((lambda x,y: y >= x ), s, v)
+    def __nonzero__(s): return Test((lambda x,y: True if x else False ), s, s)
+    def __neg__(s): return s.__class__(Map((lambda x,y: -x ), s, s))
+    def __pos__(s): return s.__class__(Map((lambda x,y: +x ), s, s))
+    def __add__(s, v): return s.__class__(Map((lambda x,y: x + y ), s, v))
+    def __div__(s, v): return s.__class__(Map((lambda x,y: x / y ), s, v))
+    def __mod__(s, v): return s.__class__(Map((lambda x,y: x % y ), s, v))
+    def __sub__(s, v): return s.__class__(Map((lambda x,y: x - y ), s, v))
+    def __radd__(s, v): return s.__class__(Map((lambda x,y: y + x ), s, v))
+    def __rsub__(s, v): return s.__class__(Map((lambda x,y: y - x ), s, v))
+    def __rmod__(s, v): return s.__class__(Map((lambda x,y: y % x ), s, v))
+    def __rdiv__(s, v): return s.__class__(Map((lambda x,y: y / x ), s, v))
+    def __pow__(s, v): return s.__class__(Map((lambda x,y: x ** y ), s, v))
+    def __rpow__(s, v): return s.__class__(Map((lambda x,y: y ** x ), s, v))
+    def __truediv__(s, v): return s.__class__(Map((lambda x,y: x / y ), s, v))
+    def __rtruediv__(s, v): return s.__class__(Map((lambda x,y: y / x ), v, s))
+    def __floordiv__(s, v): return s.__class__(Map((lambda x,y: x // y ), s, v))
+    def __rfloordiv__(s, v): return s.__class__(Map((lambda x,y: y // x ), v, s))
     def __mul__(s, v): # (*)
-        try: # Multiplying a Matrix
-            return s.__class__(sum(tuple(b * c  for b, c in zip(a, s))) for a in v)
+        try:
+            return Dot(s, v)
         except TypeError:
-            try: # Multiplying a Vector
-                return dot(s, v)
-            except TypeError: # Scalar
-                return s.__class__(a * v for a in s)
-    def dot(s, v): return dot(s, v)
-    def __rxor__(s, v): return s.__class__(cross(v, s)) # (^)
-    def __xor__(s, v): return s.__class__(cross(s, v)) # (^)
-    def cross(s, v): return s.__class__(cross(s, v))
-    def angle(s, v): return angle(s, v)
-    def rotate(s, v, a): return s.__class__(rotate(s, v, a))
+            return Map((lambda x, y: x * y), s, v)
+    def __rmul__(s, v):
+        try:
+            return Dot(v, s)
+        except TypeError:
+            return Map((lambda x, y: y * x), s, v)
+
+    # Vector Functionality
+
+    def dot(s, v): return Dot(s, v)
+    def __rxor__(s, v): return s.__class__(Cross(v, s)) # (^)
+    def __xor__(s, v): return s.__class__(Cross(s, v)) # (^)
+    def cross(s, v): return s.__class__(Cross(s, v))
+    def angle(s, v): return Angle(s, v)
+    def rotate(s, v, a): return s.__class__(Rotate(s, v, a))
     def isEquivalent(s, v, t=0.99988888):
         """
         Returns True if this vector and another are within a given tolerance of being equal.
@@ -157,7 +164,7 @@ class Vector(tuple):
         Returns True if this vector and another are within the given tolerance of being parallel.
         """
         try:
-            return 1 - t < dot(normalize(s), normalize(v))
+            return 1 - t < Dot(Normalize(s), Normalize(v))
         except TypeError:
             raise TypeError, "\"Is Parallel\" requires two Vectors and a Float."
     def distance(s, v):
@@ -166,22 +173,22 @@ class Vector(tuple):
         """
         try:
             between = (b - a for a, b in zip(s, v))
-            return magnitude(between)
+            return Magnitude(between)
         except TypeError:
             raise TypeError, "Distance requires two Vectors."
 
     # Vector Properties
 
     @property
-    def length(s): return magnitude(s)
+    def length(s): return Magnitude(s)
     @property
-    def magnitude(s): return magnitude(s)
+    def magnitude(s): return Magnitude(s)
     @property
-    def normalized(s): return s.__class__(normalize(s))
+    def normalize(s): return s.__class__(Normalize(s))
     @property
-    def normal(s): return s.__class__(normalize(s))
+    def normal(s): return s.__class__(Normalize(s))
     @property
-    def unit(s): return s.__class__(normalize(s))
+    def unit(s): return s.__class__(Normalize(s))
 
 if __name__ == '__main__':
     v1 = Vector(1,2,3)
