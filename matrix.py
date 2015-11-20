@@ -8,7 +8,7 @@ def square(m):
     """ Test if a Matrix is square """
     return len(m) == len(m[0])
 
-def multiply(m1, m2):
+def multiplyMatrix(m1, m2):
     """ Multiply two matricies """
     return tuple(tuple(c1 * r2 for c1, r2 in zip(r1, c2)) for r1, c2 in zip(m1, zip(*m2)))
 
@@ -150,23 +150,32 @@ class Matrix(tuple):
     def __ge__(s, m): return s.test(m, lambda a, b: a >= b)
     def __nonzero__(s): return s.test(s, lambda a, b: True if a else False)
     def __truediv__(s): return s.__div__(m)
-    def __rmul__(s, m): return s.__mul(m, s)
-    def __mul__(s, m): return s.__mul(s, m)
-    def __mul(s, m1, m2):
-        try: # Multiplying a Matrix
-            return s.__class__(multiply(m1, m2))
-        except TypeError: # Perhaps we're trying for a Vector Product?
+    def __rmul__(s, m):
+        try:
+            return s.__class__(multiplyMatrix(m, s))
+        except TypeError:
             try:
-                return multiplyVector(m1, m2)
-            except TypeError: # Perhaps we're mutiplying by a Scalar?
-                return s.__class__(tuple(c * m2 for c in r) for r in m1)
-    def __div__(s, m): return s.__div(s, m)
-    def __rdiv__(s, m): return s.__div(m, s)
-    def __div(s, m1, m2):
+                return multiplyVector(m, s)
+            except TypeError:
+                return s.__class__(tuple(c * m for c in r) for r in s)
+    def __mul__(s, m):
+        try:
+            return s.__class__(multiplyMatrix(s, m))
+        except TypeError:
+            try:
+                return multiplyVector(s, m)
+            except TypeError:
+                return s.__class__(tuple(c * m for c in r) for r in s)
+    def __div__(s, m):
         try: # Another matrix
-            return m1 * inverse(m2)
-        except AttributeError: # Scalar
-            return s.__class__(tuple(c / m2 for c in r) for r in m1)
+            return s * inverse(m)
+        except TypeError: # Scalar
+            return s.__class__(tuple(c / m for c in r) for r in s)
+    def __rdiv__(s, m):
+        try: # Another matrix
+            return m * inverse(s)
+        except TypeError: # Scalar
+            return s.__class__(tuple(m / c for c in r) for r in s)
 
     # Other Properties
 
