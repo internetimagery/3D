@@ -23,23 +23,22 @@ def submatrix(m, row, col):
 def determinant(m):
     """ Matrix determinant |m| """
     if not square(m): raise TypeError, "Matrix must be square."
-    if len(m) == 2:
-        flat = tuple(c for r in m for c in r)
-        return flat[0] * flat[3] - flat[1] * flat[2]
-    calc = tuple(c * determinant(submatrix(m, 0, ci)) for ri, r in enumerate(m) for ci, c in enumerate(r) if not ri)
-    result = 0
-    for a, b in enumerate(calc): # Negative / Positive
-        result = result - b if a % 2 else result + b
-    return result
+    try: # If a 2x2 matrix
+        r1, r2 = m
+        a, b = r1
+        c, d = r2
+        return a * d - b * c
+    except ValueError:
+        calc = tuple(c * determinant(submatrix(m, 0, ci)) for ri, r in enumerate(m) for ci, c in enumerate(r) if not ri)
+        result = 0
+        for a, b in enumerate(calc): # Negative / Positive
+            result = result - b if a % 2 else result + b
+        return result
 
 def cofactor(m, row, col):
     """ Find the cofactor of a cell in matrix """
     m = determinant(submatrix(m, row, col))
     return +m if row % 2 == col % 2 else -m
-
-def cofactorMatrix(m):
-    """ Generate a Matrix with the cofactor of each cell """
-    return tuple(tuple(cofactor(m, ri, ci) for ci, c in enumerate(r)) for ri, r in enumerate(m))
 
 def transpose(m):
     """ Transpose a matrix """
@@ -48,7 +47,8 @@ def transpose(m):
 def inverse(m):
     """ Generate the inverse of a matrix """
     det = determinant(m)
-    adjugate = transpose(cofactorMatrix(m))
+    cofactorMatrix = tuple(tuple(cofactor(m, ri, ci) for ci, c in enumerate(r)) for ri, r in enumerate(m))
+    adjugate = transpose(cofactorMatrix)
     scalar = (1.0 / det) if det else 0.0
     return tuple(tuple(c * scalar for c in r) for r in adjugate)
 
