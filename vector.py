@@ -31,11 +31,13 @@ def cross(v1, v2):
     Get the Normal / Cross Product of two vectors.
     """
     try:
+        x1, y1, z1 = v1
+        x2, y2, z2 = v2
         return (
-            v1[1] * v2[2] - v2[1] * v1[2],
-            v1[2] * v2[0] - v2[2] * v1[0],
-            v1[0] * v2[1] - v2[0] * v1[1])
-    except IndexError:
+            y1 * z2 - y2 * z1,
+            z1 * x2 - z2 * x1,
+            x1 * y2 - x2 * y1)
+    except ValueError:
         raise TypeError, "Cross Product requires two Vectors of 3 dimensions."
 
 def angle(v1, v2):
