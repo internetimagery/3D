@@ -1,6 +1,7 @@
 # Vector
 
 import math
+import itertools
 
 # Vector Functionality
 
@@ -64,18 +65,32 @@ def Rotate(v1, v2, a):
     except TypeError:
         raise TypeError, "Rotate requires two Vectors and an Angle."
 
-
-def Map(func, v, dt):
+def Parallel(v1, v2, tolerance=0):
     """
-    Map Vector to Data Type
+    Test if two Vectors are parallel
     """
-    try: # 2 Dimensions
-        return tuple(sum(tuple(func(a, c) for a, c in zip(v, r))) for r in dt)
+    try:
+        return 1 - tolerance < Dot(Normalize(v1), Normalize(v2))
     except TypeError:
-        try: # 1 Dimension
-            return tuple(func(a, b) for a, b in zip(v, dt))
-        except TypeError: # Scalar
-            return tuple(func(a, dt) for a in v)
+        raise TypeError, "Check requires two Vectors"
+
+def Iterate(v1, v2):
+    """
+    Iterate Vector with Vector / Scalar
+    """
+    try: # Vector
+        return zip(v1, v2)
+    except TypeError: # Scalar
+        return zip(v1, itertools.repeat(v2))
+
+def MatrixMultiply(v, m):
+    """
+    Multiply Vector by Matrix
+    """
+    try:
+        return tuple(Dot(v, r) for r in m)
+    except TypeError:
+        raise TypeError, "A Vector and Matrix are required to multiply."
 
 def Equal(v1, v2, tolerance=0):
     """
@@ -89,16 +104,9 @@ def Equal(v1, v2, tolerance=0):
 
 def Test(func, v1, v2):
     """
-    Test elements in Vector(s) for truthiness
+    Test individual elements in Vector(s) for truthiness
     """
-    result = False
-    def check(*args):
-        if func(*args): raise KeyboardInterrupt
-    try:
-        Map(check, v1, v2)
-    except KeyboardInterrupt:
-        result = True
-    return result
+    return False not in set(func(a, b) for a, b in Iterate(v1, v2))
 
 class Vector(tuple):
     """
@@ -129,32 +137,38 @@ class Vector(tuple):
     def __rle__(s, v): return Test((lambda x,y: y <= x ), s, v)
     def __rge__(s, v): return Test((lambda x,y: y >= x ), s, v)
     def __nonzero__(s): return Test((lambda x,y: True if x else False ), s, s)
-    def __neg__(s): return s.__class__(Map((lambda x,y: -x ), s, s))
-    def __pos__(s): return s.__class__(Map((lambda x,y: +x ), s, s))
-    def __add__(s, v): return s.__class__(Map((lambda x,y: x + y ), s, v))
-    def __div__(s, v): return s.__class__(Map((lambda x,y: x / y ), s, v))
-    def __mod__(s, v): return s.__class__(Map((lambda x,y: x % y ), s, v))
-    def __sub__(s, v): return s.__class__(Map((lambda x,y: x - y ), s, v))
-    def __radd__(s, v): return s.__class__(Map((lambda x,y: y + x ), s, v))
-    def __rsub__(s, v): return s.__class__(Map((lambda x,y: y - x ), s, v))
-    def __rmod__(s, v): return s.__class__(Map((lambda x,y: y % x ), s, v))
-    def __rdiv__(s, v): return s.__class__(Map((lambda x,y: y / x ), s, v))
-    def __pow__(s, v): return s.__class__(Map((lambda x,y: x ** y ), s, v))
-    def __rpow__(s, v): return s.__class__(Map((lambda x,y: y ** x ), s, v))
-    def __truediv__(s, v): return s.__class__(Map((lambda x,y: x / y ), s, v))
-    def __rtruediv__(s, v): return s.__class__(Map((lambda x,y: y / x ), v, s))
-    def __floordiv__(s, v): return s.__class__(Map((lambda x,y: x // y ), s, v))
-    def __rfloordiv__(s, v): return s.__class__(Map((lambda x,y: y // x ), v, s))
+    def __neg__(s): return s.__class__( -a for a in s )
+    def __pos__(s): return s.__class__( +a for a in s )
+    def __add__(s, v): return s.__class__( a + b for a, b in Iterate(s, v))
+    def __div__(s, v): return s.__class__( a / b for a, b in Iterate(s, v))
+    def __mod__(s, v): return s.__class__( a % b for a, b in Iterate(s, v))
+    def __sub__(s, v): return s.__class__( a - b for a, b in Iterate(s, v))
+    def __radd__(s, v): return s.__class__( b + a for a, b in Iterate(s, v))
+    def __rsub__(s, v): return s.__class__( b - a for a, b in Iterate(s, v))
+    def __rmod__(s, v): return s.__class__( b % a for a, b in Iterate(s, v))
+    def __rdiv__(s, v): return s.__class__( b / a for a, b in Iterate(s, v))
+    def __pow__(s, v): return s.__class__( a ** b for a, b in Iterate(s, v))
+    def __rpow__(s, v): return s.__class__( b ** a for a, b in Iterate(s, v))
+    def __truediv__(s, v): return s.__class__( a / b for a, b in Iterate(s, v))
+    def __rtruediv__(s, v): return s.__class__( b / a for a, b in Iterate(s, v))
+    def __floordiv__(s, v): return s.__class__( a // b for a, b in Iterate(s, v))
+    def __rfloordiv__(s, v): return s.__class__( b // a for a, b in Iterate(s, v))
     def __mul__(s, v): # (*)
         try:
-            return Dot(s, v)
+            return MatrixMultiply(s, v)
         except TypeError:
-            return Map((lambda x, y: x * y), s, v)
-    def __rmul__(s, v):
+            try:
+                return Dot(s, v)
+            except TypeError:
+                return s.__class__(a * v for a in s)
+    def __rmul__(s, v): # (*)
         try:
-            return Dot(v, s)
+            return MatrixMultiply(v, s)
         except TypeError:
-            return Map((lambda x, y: y * x), s, v)
+            try:
+                return Dot(v, s)
+            except TypeError:
+                return s.__class__(v * a for a in s)
 
     # Vector Functionality
 
@@ -164,19 +178,8 @@ class Vector(tuple):
     def cross(s, v): return s.__class__(Cross(s, v))
     def angle(s, v): return Angle(s, v)
     def rotate(s, v, a): return s.__class__(Rotate(s, v, a))
-    def isEquivalent(s, v, t=0.99988888):
-        """
-        Returns True if this vector and another are within a given tolerance of being equal.
-        """
-        return False not in set(abs(a - b) < t for a, b in zip(s, v))
-    def isParallel(s, v, t=0.99988888):
-        """
-        Returns True if this vector and another are within the given tolerance of being parallel.
-        """
-        try:
-            return 1 - t < Dot(Normalize(s), Normalize(v))
-        except TypeError:
-            raise TypeError, "\"Is Parallel\" requires two Vectors and a Float."
+    def isEquivalent(s, v, t=0.99988888): return Equal(s, v, t)
+    def isParallel(s, v, t=0.99988888): return Parallel(s, v, t)
     def distance(s, v):
         """
         Distance between two Vectors
@@ -200,8 +203,6 @@ class Vector(tuple):
     @property
     def unit(s): return s.__class__(Normalize(s))
 
-v1 = Vector(1,2,3)
-print v1 == 1
 
 if __name__ == '__main__':
     v1 = Vector(1,2,3)
@@ -211,13 +212,18 @@ if __name__ == '__main__':
         (4,5,6),
         (7,8,9)
     ) # Matrix
+    v3 = v1 + v2
     assert v1 == v1
     assert v1 != v2
-    v3 = v1 + v2
     assert v3 == (4,4,4)
+    assert 3 < v3
+    assert v3 > v1
+    assert v1 != 1
     assert 2 * v1 == (2,4,6)
     assert v1 ** 2 == (1,4,9)
     assert v1 * v2 == 10
     assert v1 * m1 == (14,32,50)
     assert (1,2,3) ^ v2 == (-4,8,-4)
+    assert Angle((1,0,0),(0,0,1)) == math.radians(90)
+    assert Equal(Rotate((1,0,0), (0,1,0), math.radians(90)), (0,0,-1), 0.00001)
     print "Ok!"
