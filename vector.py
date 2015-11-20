@@ -77,6 +77,16 @@ def Map(func, v, dt):
         except TypeError: # Scalar
             return tuple(func(a, dt) for a in v)
 
+def Equal(v1, v2, tolerance=0):
+    """
+    Test equality of Vectors
+    """
+    try:
+        return False not in set(abs(a - b) <= tolerance for a, b in zip(v1, v2))
+    except TypeError:
+        return False
+
+
 def Test(func, v1, v2):
     """
     Test elements in Vector(s) for truthiness
@@ -106,16 +116,16 @@ class Vector(tuple):
 
     # Vector Operations
 
+    def __req__(s, v): return s == v
+    def __rne__(s, v): return s != v
+    def __eq__(s, v): return Equal(s, v)
+    def __ne__(s, v): return False if s == v else True
     def __lt__(s, v): return Test((lambda x,y: x < y ), s, v)
     def __gt__(s, v): return Test((lambda x,y: x > y ), s, v)
-    def __ne__(s, v): return Test((lambda x,y: x != y ), s, v)
-    def __eq__(s, v): return Test((lambda x,y: x == y ), s, v)
     def __le__(s, v): return Test((lambda x,y: x <= y ), s, v)
     def __ge__(s, v): return Test((lambda x,y: x >= y ), s, v)
     def __rlt__(s, v): return Test((lambda x,y: y < x ), s, v)
     def __rgt__(s, v): return Test((lambda x,y: y > x ), s, v)
-    def __rne__(s, v): return Test((lambda x,y: y != x ), s, v)
-    def __req__(s, v): return Test((lambda x,y: y == x ), s, v)
     def __rle__(s, v): return Test((lambda x,y: y <= x ), s, v)
     def __rge__(s, v): return Test((lambda x,y: y >= x ), s, v)
     def __nonzero__(s): return Test((lambda x,y: True if x else False ), s, s)
@@ -189,6 +199,9 @@ class Vector(tuple):
     def normal(s): return s.__class__(Normalize(s))
     @property
     def unit(s): return s.__class__(Normalize(s))
+
+v1 = Vector(1,2,3)
+print v1 == 1
 
 if __name__ == '__main__':
     v1 = Vector(1,2,3)
