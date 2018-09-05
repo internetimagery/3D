@@ -1,8 +1,8 @@
-# Matrix
-
-import math
-
 # Matrix Operations
+
+def sqrt(val):
+    """ Faster square root """
+    return val and (val ** -0.5)*val
 
 def square(m):
     """ Test if a Matrix is square """
