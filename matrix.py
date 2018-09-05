@@ -85,7 +85,7 @@ class Matrix(tuple):
             else:
                 return tuple.__new__(cls, args)
         except TypeError: # Flattened
-            rows = kwargs["rows"] if "rows" in kwargs else math.sqrt(l) # Rows
+            rows = kwargs["rows"] if "rows" in kwargs else sqrt(l) # Rows
             cols = float(l) / rows
             if not cols % 1: # Ensure the matrix fits the size
                 return tuple.__new__(cls, (tuple(args[c+r] for c in range(int(cols))) for r in range(0, int(rows * cols), int(rows))))
